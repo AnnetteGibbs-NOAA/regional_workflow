@@ -228,14 +228,24 @@ Creating links in the FIXLAM directory to the grid files..."
   case "${file_group}" in
 #
   "grid")
-    fns=( \
-    "C*${DOT_OR_USCORE}mosaic.halo${NHW}.nc" \
-    "C*${DOT_OR_USCORE}mosaic.halo${NH4}.nc" \
-    "C*${DOT_OR_USCORE}mosaic.halo${NH3}.nc" \
-    "C*${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NHW}.nc" \
-    "C*${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NH3}.nc" \
-    "C*${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NH4}.nc" \
+    if [ "${MACHINE}" == "WCOSS_DELL_P3" ] ; then
+# EMC only has one mosaic.halo.nc file saved and it is 4-cell wide halo mosaic file
+      fns=( \
+      "C*${DOT_OR_USCORE}mosaic.nc" \
+      "C*${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NHW}.nc" \
+      "C*${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NH3}.nc" \
+      "C*${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NH4}.nc" \
         )
+    else
+      fns=( \
+      "C*${DOT_OR_USCORE}mosaic.halo${NHW}.nc" \
+      "C*${DOT_OR_USCORE}mosaic.halo${NH4}.nc" \
+      "C*${DOT_OR_USCORE}mosaic.halo${NH3}.nc" \
+      "C*${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NHW}.nc" \
+      "C*${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NH3}.nc" \
+      "C*${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NH4}.nc" \
+        )
+    fi
     fps=( "${fns[@]/#/${GRID_DIR}/}" )
     run_task="${RUN_TASK_MAKE_GRID}"
     ;;
@@ -245,7 +255,8 @@ Creating links in the FIXLAM directory to the grid files..."
     "C*${DOT_OR_USCORE}oro_data.tile${TILE_RGNL}.halo${NH0}.nc" \
     "C*${DOT_OR_USCORE}oro_data.tile${TILE_RGNL}.halo${NH4}.nc" \
         )
-    if [ "${CCPP_PHYS_SUITE}" = "FV3_HRRR" ] || [ "${CCPP_PHYS_SUITE}" = "FV3_RAP" ]; then
+    if [ "${CCPP_PHYS_SUITE}" = "FV3_HRRR" ] || [ "${CCPP_PHYS_SUITE}" = "FV3_RAP" ] || \
+        [ "${CCPP_PHYS_SUITE}" = "FV3_GFS_v15_thompson_mynn_lam3km" ]; then
       fns+=( \
       "C*${DOT_OR_USCORE}oro_data_ss.tile${TILE_RGNL}.halo${NH0}.nc" \
       "C*${DOT_OR_USCORE}oro_data_ls.tile${TILE_RGNL}.halo${NH0}.nc" \

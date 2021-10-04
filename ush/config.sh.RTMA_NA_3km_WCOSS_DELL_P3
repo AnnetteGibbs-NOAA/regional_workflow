@@ -1,0 +1,284 @@
+#!/bin/bash
+MACHINE="WCOSS_DELL_P3"
+ACCOUNT="RTMA-T2O"
+#RESERVATION="rrfsdet"
+EXPT_BASEDIR="/gpfs/dell2/emc/modeling/save/${USER}/RTMA-NA"
+EXPT_SUBDIR="RTMA_NA_3km_dev1"
+
+PARTITION_GRAPHICS=kjet,xjet
+
+if [[ -n $RESERVATION ]] ; then
+  ACCOUNT=rtrr
+  SERVICE_ACCOUNT=nrtrr
+  PARTITION_DEFAULT=kjet
+  PARTITION_FCST=kjet
+  PARTITION_ANALYSIS=kjet
+else
+  PARTITION_DEFAULT=""
+fi
+
+OBSPATH_NSSLMOSIAC=/gpfs/dell1/nco/ops/dcom/prod/ldmdata/obs/upperair/mrms/conus
+FFG_DIR=/public/data/grids/ncep/ffg/grib2
+# Need to set if using EMC's fix_lam files
+FIXLAM_NCO_BASEDIR=/gpfs/dell2/emc/modeling/save/Annette.Gibbs/rrfs/fix/fix_lam.20210128
+RADARREFL_TIMELEVEL=(0)
+FH_DFI_RADAR=""
+
+if [[ $MACHINE == "hera" ]] ; then
+  ACCOUNT="wrfruc"
+  PARTITION_DEFAULT=""
+  PARTITION_FCST=""
+  QUEUE_ANALYSIS="batch"
+
+# for using RAP as boundary and initial
+#  EXTRN_MDL_SOURCE_BASEDIR_ICS=/scratch2/BMC/public/data/grids/rap/full/wrfnat/grib2
+#  EXTRN_MDL_SOURCE_BASEDIR_LBCS=/scratch2/BMC/public/data/grids/rap/full/wrfnat/grib2
+# for using GFS as boundary and initial
+  EXTRN_MDL_SOURCE_BASEDIR_ICS=/scratch2/BMC/public/data/grids/gfs/0p25deg/grib2
+  EXTRN_MDL_SOURCE_BASEDIR_LBCS=/scratch2/BMC/public/data/grids/gfs/0p25deg/grib2
+# observations
+  OBSPATH=/scratch2/BMC/public/data/grids/rap/obs
+  OBSPATH_NSSLMOSIAC=/scratch2/BMC/public/data/radar/nssl/mrms/conus
+  FFG_DIR=/public/data/grids/ncep/ffg/grib2
+  LIGHTNING_ROOT=/scratch2/BMC/public/data/lightning
+  ENKF_FCST=/scratch1/NCEPDEV/rstprod/com/gfs/prod
+fi
+
+QUEUE_ANALYSIS="dev"
+QUEUE_FCST="dev"
+QUEUE_WGRIB2="dev"
+
+# User for WCOSS-Dell
+WFLOW_XML_FN="FV3LAM_wflow_WCOSS_DELL_P3.xml"
+
+VERBOSE="TRUE"
+
+RUN_ENVIR="nco"
+PREEXISTING_DIR_METHOD="upgrade"
+
+PREDEF_GRID_NAME=RRFS_NA_3km
+
+DO_DACYCLE="TRUE"
+#DO_SURFACE_CYCLE="FALSE"
+#DO_SPINUP="FALSE"
+#DO_RETRO="TRUE"
+#LBCS_ICS_ONLY="TRUE"
+#DO_NONVAR_CLDANAL="TRUE"
+#DO_REFL2TTEN="FALSE"
+#
+#-------------------------------------------------------------------------------------
+#      GSI Namelist parameters configurable across differnt applications
+# if we need to tune one GSI namelist parameter, we can elevate it to a shell variable
+# and assign value in config.sh and give it a default value in config_default.sh
+# In realtime testing, don't need to regenerate the whole workflow, you can tweak 
+# $EXPTDIR/var_defns.sh and $FIX_GSI/gsiparm.anl.sh to make sure the change is
+# expected and then put it back into config.sh and config_default.sh
+#       (need to follow FORTRAN namelist convetion)
+#-------------------------------------------------------------------------------------
+#
+# &SETUP  and &BKGERR
+diag_radardbz=.false.
+write_diag_2=.true.
+bkgerr_vs=0.125                        #1.0 is default setting
+#bkgerr_hzscl=0.373,0.746,1.5         #default setting, no trailing ,
+bkgerr_hzscl=0.046625,0.09325,0.1875  #hzscl/8
+
+# &HYBRID_ENSEMBLE
+readin_localization=.true.     #if true, it overwrites the "beta1_inv/ens_h/ens_v" setting
+beta1_inv=0.5                  #beata_inv is 1-ensemble_wgt
+ens_h=20                       #110
+ens_v=1                        #3
+regional_ensemble_option=1     #1 for GDAS
+grid_ratio_fv3=2.0             #fv3 resolution 3km, so analysis=3*2=6km
+grid_ratio_ens=3               #analysis 6km, so ensemble=6*3=18km. GDAS ensemble is 20km
+i_en_perts_io=1                #0 or 1: original file   3: pre-processed ensembles
+
+# &RAPIDREFRESH_CLDSURF
+l_PBL_pseudo_SurfobsT=.false.
+l_PBL_pseudo_SurfobsQ=.false
+i_use_2mQ4B=0
+i_use_2mT4B=0
+#-------------------------------------------------------------------------------------
+#
+BERROR_FN="berror.rtma"      #under $FIX_GSI
+ANAVINFO_FN="anavinfo.fv3lam_hrrr"
+CONVINFO_FN="convinfo.rtma"
+OBERROR_FN="errtable.rtma"
+HYBENSINFO_FN="hybens_info.rtma"
+#AIRCRAFT_REJECT="/home/amb-verif/acars_RR/amdar_reject_lists"
+#SFCOBS_USELIST="/lfs4/BMC/amb-verif/rap_ops_mesonet_uselists"
+AIRCRAFT_REJECT=${FIX_GSI}
+SFCOBS_USELIST=${FIX_GSI}
+#
+#
+QUILTING="TRUE"
+CCPP_PHYS_SUITE="FV3_GFS_v15_thompson_mynn_lam3km"
+
+EXTRN_MDL_ICS_OFFSET_HRS="0"
+BOUNDARY_LEN_HRS="1"
+LBC_SPEC_INTVL_HRS="1"
+EXTRN_MDL_LBCS_OFFSET_HRS="0"
+EXTRN_MDL_LBCS_SEARCH_OFFSET_HRS="0"
+
+DATE_FIRST_CYCL="20210927"
+DATE_LAST_CYCL="20210927"
+CYCL_HRS=( "00" "12" )
+CYCL_HRS_SPINSTART=("03" "15")
+CYCL_HRS_PRODSTART=("99") # RTMA always warm-starts
+CYCLEMONTH="8-12"
+#CYCLEDAY="1-4"
+
+if [[ $DO_RETRO == "TRUE" ]] ; then
+  if [[ $LBCS_ICS_ONLY == "TRUE" ]]; then
+    PREEXISTING_DIR_METHOD="rename"
+    INITIAL_CYCLEDEF="${DATE_FIRST_CYCL}0000 ${DATE_LAST_CYCL}2300 12:00:00"
+    BOUNDARY_CYCLEDEF="${DATE_FIRST_CYCL}0000 ${DATE_LAST_CYCL}2300 12:00:00"
+  else
+    PREEXISTING_DIR_METHOD="upgrade"
+    PROD_CYCLEDEF="${DATE_FIRST_CYCL}0000 ${DATE_LAST_CYCL}2300 12:00:00"
+    POSTPROC_CYCLEDEF="${DATE_FIRST_CYCL}0000 ${DATE_LAST_CYCL}2300 12:00:00"
+  fi
+else
+  #INITIAL_CYCLEDEF="${DATE_FIRST_CYCL}0300 ${DATE_LAST_CYCL}2300 12:00:00"
+  #BOUNDARY_CYCLEDEF="${DATE_FIRST_CYCL}0000 ${DATE_LAST_CYCL}2300 06:00:00"
+  PROD_CYCLEDEF="${DATE_FIRST_CYCL}0000 ${DATE_LAST_CYCL}2300 01:00:00"
+  POSTPROC_CYCLEDEF="${DATE_FIRST_CYCL}0000 ${DATE_LAST_CYCL}2300 01:00:00"
+  POSTPROC_LONG_CYCLEDEF="${DATE_FIRST_CYCL}0000 ${DATE_LAST_CYCL}2300 06:00:00"
+  ARCHIVE_CYCLEDEF="${DATE_FIRST_CYCL}0700 ${DATE_LAST_CYCL}2300 24:00:00"
+  if [[ $DO_SPINUP == "TRUE" ]] ; then
+    SPINUP_CYCLEDEF="00 03-08,15-20 ${CYCLEDAY} ${CYCLEMONTH} 2021 *"
+  fi
+fi
+
+FCST_LEN_HRS="0"
+FCST_LEN_HRS_SPINUP="0"
+POSTPROC_LEN_HRS="0"
+POSTPROC_LONG_LEN_HRS="0"
+
+for i in {0..23}; do FCST_LEN_HRS_CYCLES[$i]=0.0003; done
+DA_CYCLE_INTERV="1" #need to be 1 to have hourly DA
+RESTART_INTERVAL="1"
+
+#NCORES_RUN_ANAL=240
+WTIME_RUN_ANAL="00:30:00"
+NNODES_RUN_ANAL="70"
+PPN_RUN_ANAL="4"
+HYBENSMEM_NMIN=66
+HALO_BLEND=10 # must use 10 as that is what lamdax uses
+
+NNODES_MAKE_ICS="10"
+NNODES_MAKE_LBCS="5"
+PPN_MAKE_ICS="8"
+PPN_MAKE_LBCS="10"
+WTIME_MAKE_LBCS="01:30:00"
+
+WTIME_RUN_FCST="00:20:00" #NA_3km, normally 13 minutes is enough to generate dynf000.nc and phyf000.nc
+# Set to EMC's layout
+LAYOUT_X=42
+LAYOUT_Y=45
+# need to set in config_defaults.sh as you can't override it, unless you can overwrite it by setting these two variables the sme way layout_x and layout_y is defined in set_predef_
+WRTCMP_write_groups="3"
+WRTCMP_write_tasks_per_group="84"
+NATIVE_RUN_FCST="-R span[ptile=14] -R affinity[core\(2\):distribute=balance]"
+#NATIVE_RUN_ANAL="--cpus-per-task 4 --exclusive"
+NCTSK_RUN_ANAL="28"
+OMP_THREADS_RUN_ANAL="7"
+TOTAL_TASKS_RUN_ANAL="1960"
+NCTSK_RUN_FCST="14"
+OMP_THREADS_RUN_FCST="2"
+TOTAL_TASKS_RUN_FCST="2142"
+
+NNODES_RUN_POST="4"
+PPN_RUN_POST="16"
+OMP_THREADS_RUN_POST="1"
+TOTAL_TASKS_RUN_POST="64"
+NCTSK_RUN_POST="24"
+NATIVE_RUN_POST="-R affinity[core]"
+WTIME_RUN_POST="00:35:00"
+
+EXTRN_MDL_NAME_ICS="FV3GFS"
+EXTRN_MDL_NAME_LBCS="FV3GFS"
+
+FV3GFS_FILE_FMT_ICS="grib2"
+FV3GFS_FILE_FMT_LBCS="grib2"
+
+envir="para"
+
+NET="RTMA_NA_3km" ##must start with "RTMA". ${NET}.t${cyc}z.bgdawpf${fhr}.${tmmark}.grib2
+TAG="RTMA_NA_3km_dev1" ## used by job names
+IS_RTMA="TRUE"
+NCORES_PER_NODE=40 #kjet
+FG_ROOTDIR="/gpfs/dell2/ptmp/Annette.Gibbs/nwges/para/RRFS_NA_3km" #only needed by RTMA; Annette is copying files to this directory
+# Need to set on WCOSS
+OBSPATH="/gpfs/dell2/ptmp/Shelley.Melchior/rtma_3d/com/rtma/prod"
+ENKF_FCST="/gpfs/dell1/nco/ops/com/gfs/prod"
+LIGHTNING_ROOT="/gpfs/dell2/ptmp/Shelley.Melchior/rtma_3d/com/rtma/prod"
+DT_ATMOS=1
+MAXTRIES_RUN_FCST="1"
+PYTHON_GRAPHICS_YML_FN="rtma.yml"
+
+USE_CUSTOM_POST_CONFIG_FILE="TRUE"
+TESTBED_FIELDS_FN="testbed_fields_rtma.txt"
+CUSTOM_POST_CONFIG_FP="$(cd "$( dirname "${BASH_SOURCE[0]}" )/.." &>/dev/null&&pwd)/fix/upp/postxconfig-NT-fv3lam_rrfs.txt"
+CUSTOM_POST_PARAMS_FP="$(cd "$( dirname "${BASH_SOURCE[0]}" )/.." &>/dev/null&&pwd)/fix/upp/params_grib2_tbl_new"
+POST_FULL_MODEL_NAME="FV3RRTMA"
+ARCHIVEDIR="/5year/BMC/wrfruc/rtma_na_3km_dev1"
+NCARG_ROOT="/apps/ncl/6.5.0-CentOS6.10_64bit_nodap_gnu447"
+NCL_HOME="/home/rtrr/RTMA/graphics"
+NCL_REGION="conus"
+MODEL="RTMA_NA_3km"
+ADDNL_OUTPUT_GRIDS=( "hrrr" "rrfsak" )
+
+TILE_LABELS="NA"
+TILE_SETS="full"
+
+#
+# In NCO mode, the following don't need to be explicitly set to "FALSE" 
+# in this configuration file because the experiment generation script
+# will do this (along with printing out an informational message).
+#
+#RUN_TASK_MAKE_GRID="FALSE"
+#RUN_TASK_MAKE_OROG="FALSE"
+#RUN_TASK_MAKE_SFC_CLIMO="FALSE"
+
+RUN="RTMA_NA_3km_dev1"
+COMINgfs=""
+
+STMP="/gpfs/dell2/ptmp/${USER}/stmp"  # Path to directory STMP that mostly contains input files.
+PTMP="/gpfs/dell2/ptmp/${USER}/ptmp"  # Path to directory STMP that mostly contains input files.
+NWGES="/gpfs/dell2/ptmp/Annette.Gibbs/nwges"  # Path to directory NWGES that save boundary, cold initial, restart files
+
+if [[ $DO_RETRO == "TRUE" ]] ; then
+  CLEAN_OLDPROD_HRS="240"
+  CLEAN_OLDLOG_HRS="240"
+  CLEAN_OLDRUN_HRS="6"
+  CLEAN_OLDFCST_HRS="6"
+  CLEAN_OLDSTMPPOST_HRS="6"
+  if [[ $LBCS_ICS_ONLY == "TRUE" ]]; then
+    CLEAN_OLDRUN_HRS="7777"
+    CLEAN_OLDFCST_HRS="7777"
+  fi
+else
+  CLEAN_OLDPROD_HRS="72"
+  CLEAN_OLDLOG_HRS="72"
+  CLEAN_OLDRUN_HRS="12"
+  CLEAN_OLDFCST_HRS="12"
+  CLEAN_OLDSTMPPOST_HRS="24"
+  CLEAN_NWGES_HRS="72"
+fi
+
+#
+# In NCO mode, the user must manually (e.g. after doing the build step)
+# create the symlink "${FIXrrfs}/fix_sar" that points to EMC's FIXLAM
+# directory on the machine.  For example, on hera, the symlink's target
+# needs to be
+#
+#   /scratch2/NCEPDEV/fv3-cam/emc.campara/fix_fv3cam/fix_sar
+#
+# The experiment generation script will then set FIXLAM to 
+#
+#   FIXLAM="${FIXrrfs}/fix_lam/${EMC_GRID_NAME}"
+#
+# where EMC_GRID_NAME has the value set above.
+#
+

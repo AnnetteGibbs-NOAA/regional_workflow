@@ -91,7 +91,8 @@ case $MACHINE in
   module list
   ulimit -s unlimited
   ulimit -a
-  APRUN="mpirun -l -np ${PE_MEMBER01}"
+# APRUN="mpirun -l -np ${PE_MEMBER01}"
+  APRUN="mpirun"
   ;;
 #
 "THEIA")
@@ -349,32 +350,37 @@ fi
 case $MACHINE in
 
 "WCOSS_C" | "WCOSS" | "WCOSS_DELL_P3")
+   obs_source=rtma_ru
+   subcyc="00"
    obsfileprefix=${obs_source}
    obspath_tmp=${OBSPATH}/${obs_source}.${YYYYMMDD}
   ;;
 "JET" | "HERA")
    obsfileprefix=${YYYYMMDDHH}.${obs_source}
    obspath_tmp=${OBSPATH}
+   subcyc=""
   ;;
 "ORION" )
    obs_source=rap
+   subcyc=""
    #obsfileprefix=${YYYYMMDDHH}.${obs_source}               # rap observation from JET.
    obsfileprefix=${obs_source}.${YYYYMMDD}/${obs_source}    # observation from operation.
    obspath_tmp=${OBSPATH}
   ;;
 *)
+   subcyc=""
    obsfileprefix=${obs_source}
    obspath_tmp=${OBSPATH}
 esac
 
 
-obs_files_source[0]=${obspath_tmp}/${obsfileprefix}.t${HH}z.prepbufr.tm00
+obs_files_source[0]=${obspath_tmp}/${obsfileprefix}.t${HH}${subcyc}z.prepbufr.tm00
 obs_files_target[0]=prepbufr
 
-obs_files_source[1]=${obspath_tmp}/${obsfileprefix}.t${HH}z.satwnd.tm00.bufr_d
+obs_files_source[1]=${obspath_tmp}/${obsfileprefix}.t${HH}${subcyc}z.satwnd.tm00.bufr_d
 obs_files_target[1]=satwndbufr
 
-obs_files_source[2]=${obspath_tmp}/${obsfileprefix}.t${HH}z.nexrad.tm00.bufr_d
+obs_files_source[2]=${obspath_tmp}/${obsfileprefix}.t${HH}${subcyc}z.nexrad.tm00.bufr_d
 obs_files_target[2]=l2rwbufr
 
 obs_number=${#obs_files_source[@]}

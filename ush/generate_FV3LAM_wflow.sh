@@ -243,6 +243,24 @@ settings="\
   'ncores_run_anal': ${NCORES_RUN_ANAL}
   'native_run_anal': ${NATIVE_RUN_ANAL}
 #
+# Needed for job cards on WCOSS-Dell
+#
+  'layout_x': ${LAYOUT_X}
+  'layout_y': ${LAYOUT_Y}
+  'write_groups': ${WRTCMP_write_groups}
+  'write_tasks_per_group': ${WRTCMP_write_tasks_per_group}
+  'native_run_post': ${NATIVE_RUN_POST}
+#
+  'nctsk_run_anal': ${NCTSK_RUN_ANAL}
+  'omp_threads_run_anal': ${OMP_THREADS_RUN_ANAL}
+  'total_tasks_run_anal': ${TOTAL_TASKS_RUN_ANAL}
+  'total_tasks_run_fcst': ${TOTAL_TASKS_RUN_FCST}
+  'nctsk_run_fcst': ${NCTSK_RUN_FCST}
+  'omp_threads_run_fcst': ${OMP_THREADS_RUN_FCST}
+  'nctsk_run_post': ${NCTSK_RUN_POST}
+  'omp_threads_run_post': ${OMP_THREADS_RUN_POST}
+  'total_tasks_run_post': ${TOTAL_TASKS_RUN_POST}
+#
 # Number of logical processes per node for each task.  If running without
 # threading, this is equal to the number of MPI processes per node.
 #
@@ -678,7 +696,10 @@ fi
 # May want to remove lsoil from FV3.input.yml (and maybe input.nml.FV3).
 # Also, may want to set lsm here as well depending on SDF_USES_RUC_LSM.
 #
-lsoil="4"
+# Need to remove lsoil="4" because it is not used with NOAH LSM.  The only
+# way to remove it from the namelist is to remove it here, otherwise it puts
+# back in the namelist.
+#lsoil="4"
 if [ "${EXTRN_MDL_NAME_ICS}" = "HRRR" -o \
      "${EXTRN_MDL_NAME_ICS}" = "RAP" ] && \
    [ "${SDF_USES_RUC_LSM}" = "TRUE" ]; then

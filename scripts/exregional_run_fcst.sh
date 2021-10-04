@@ -105,7 +105,9 @@ case $MACHINE in
   "WCOSS_DELL_P3")
     ulimit -s unlimited
     ulimit -a
-    APRUN="mpirun -l -np ${PE_MEMBER01}"
+#   APRUN="mpirun -l -np ${PE_MEMBER01}"
+    APRUN="mpirun"
+    OMP_NUM_THREADS=2
     ;;
 
   "HERA")
@@ -190,8 +192,12 @@ if [ "${RUN_TASK_MAKE_GRID}" = "TRUE" ] && [ "${MACHINE}" != "WCOSS_CRAY" ]; the
 fi
 
 # Symlink to mosaic file with a completely different name.
-#target="${FIXLAM}/${CRES}${DOT_OR_USCORE}mosaic.halo${NH4}.nc"   # Should this point to this halo4 file or a halo3 file???
-target="${FIXLAM}/${CRES}${DOT_OR_USCORE}mosaic.halo${NH3}.nc"   # Should this point to this halo4 file or a halo3 file???
+if [ "${MACHINE}" == "WCOSS_DELL_P3" ] ; then
+  target="${FIXLAM}/${CRES}${DOT_OR_USCORE}mosaic.nc"   # This is EMC's 4-cell wide halo mosaic file
+else
+  #target="${FIXLAM}/${CRES}${DOT_OR_USCORE}mosaic.halo${NH4}.nc"   # Should this point to this halo4 file or a halo3 file???
+  target="${FIXLAM}/${CRES}${DOT_OR_USCORE}mosaic.halo${NH3}.nc"   # Should this point to this halo4 file or a halo3 file???
+fi
 symlink="grid_spec.nc"
 if [ -f "${target}" ]; then
   ln_vrfy -sf ${relative_or_null} $target $symlink
@@ -296,8 +302,10 @@ fi
 # that the FV3 model is hardcoded to recognize, and those are the names 
 # we use below.
 #
+# The Thompson_MYNN Suite now uses the gravity wave drag parameterization, so include that option here
 if [ "${CCPP_PHYS_SUITE}" = "FV3_HRRR" ] || \
-   [ "${CCPP_PHYS_SUITE}" = "FV3_RAP" ]; then
+   [ "${CCPP_PHYS_SUITE}" = "FV3_RAP" ] || \
+   [ "${CCPP_PHYS_SUITE}" = "FV3_GFS_v15_thompson_mynn_lam3km" ]; then
 
 
   fileids=( "ss" "ls" )
@@ -536,9 +544,15 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-export KMP_AFFINITY=scatter
-export OMP_NUM_THREADS=${OMP_NUM_THREADS:-1} #Needs to be 1 for dynamic build of CCPP with GFDL fast physics, was 2 before.
-export OMP_STACKSIZE=1024m
+if [ $MACHINE == "WCOSS_DELL_P3" ]; then
+  export OMP_NUM_THREADS=4
+  export OMP_STACKSIZE=2048m
+  export KMP_AFFINITY=scatter
+else
+  export KMP_AFFINITY=scatter
+  export OMP_STACKSIZE=1024m
+  export OMP_NUM_THREADS=${OMP_NUM_THREADS:-1} #Needs to be 1 for dynamic build of CCPP with GFDL fast physics, was 2 before.
+fi
 
 #
 #-----------------------------------------------------------------------
@@ -562,6 +576,38 @@ if [[ -f phy_data.nc ]] ; then
   fi
   cd ..
 fi
+
+# Copy fix file for new vertical configuration
+
+#cp $FIXam/global_hyblev_fcst_rrfsL65.txt global_hyblev_fcst.txt
+
+cp /gpfs/dell6/emc/modeling/noscrub/emc.campara/fv3lamda/regional_workflow/fix/fix_am/merra2_fix/optics* .
+cp /gpfs/dell6/emc/modeling/noscrub/emc.campara/fv3lamda/regional_workflow/fix/fix_am/merra2_fix/aeroclim* .
+
+#Thompson MP
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/thompson/CCN_ACTIVATE.BIN            CCN_ACTIVATE.BIN
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/thompson/freezeH2O.dat               freezeH2O.dat
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/thompson/qr_acr_qgV2.dat             qr_acr_qgV2.dat
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/thompson/qr_acr_qsV2.dat             qr_acr_qsV2.dat
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/thompson/thompson_tables_precomp.sl  thompson_tables_precomp.sl
+
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/thompson/field_table .
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/fd_nems.yaml .
+
+#CO2 files
+
+#export FIXco2=/gpfs/dell6/emc/modeling/noscrub/emc.campara/fv3lamda/regional_workflow/fix/fix_am/fix_co2_proj
+#for file in `ls $FIXco2/global_co2historicaldata* ` ; do
+#  cp $file $(echo $(basename $file) |sed -e "s/global_//g")
+#done
+
+#Copy UPP parm files for inline post
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/post_itag                 ./itag
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/nam_micro_lookup.dat      ./eta_micro_lookup.dat
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/postxconfig-NT-fv3lam.txt ./postxconfig-NT.txt
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/postxconfig-NT-fv3lam.txt ./postxconfig-NT_FH00.txt
+#cp /gpfs/dell2/emc/modeling/noscrub/emc.campara/fv3lamdax/regional_workflow/parm/params_grib2_tbl_new      ./params_grib2_tbl_new
+
 #
 #-----------------------------------------------------------------------
 #
@@ -573,6 +619,8 @@ fi
 #
 #-----------------------------------------------------------------------
 #
+
+
 $APRUN ${FV3_EXEC_FP} || print_err_msg_exit "\
 Call to executable to run FV3-LAM forecast returned with nonzero exit
 code."

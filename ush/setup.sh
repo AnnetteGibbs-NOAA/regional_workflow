@@ -718,6 +718,11 @@ case $MACHINE in
     TOPO_DIR=${TOPO_DIR:-"/gpfs/dell2/emc/modeling/noscrub/emc.glopara/git/fv3gfs/fix/fix_orog"}
     SFC_CLIMO_INPUT_DIR=${SFC_CLIMO_INPUT_DIR:-"/gpfs/dell2/emc/modeling/noscrub/emc.glopara/git/fv3gfs/fix/fix_sfc_climo"}
     FIXLAM_NCO_BASEDIR=${FIXLAM_NCO_BASEDIR:-"/needs/to/be/specified"}
+    FIX_GSI=${FIX_GSI:-"${HOMErrfs}/fix/gsi"}
+    FIX_UPP=${FIX_UPP:-"${HOMErrfs}/fix/upp"}
+    FIX_CRTM=${FIX_CRTM:-"${HOMErrfs}/fix/crtm/CRTM_v2.3.0"}
+    AIRCRAFT_REJECT=${AIRCRAFT_REJECT:-"${FIX_GSI}"}
+    SFCOBS_USELIST=${SFCOBS_USELIST:-"${FIX_GSI}"}
     ;;
 
   "HERA")
@@ -1061,7 +1066,8 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-# If using the FV3_HRRR or FV3_RAP physics suites, make sure that the directory 
+# If using the FV3_HRRR or FV3_RAP or FV3_GFS_v15_thompson_mynn_lam3km
+# physics suites, make sure that the directory
 # from which certain fixed orography files will be copied to the experiment 
 # directory actually exists.  Note that this is temporary code.  It should
 # be removed once there is a script or code available that will create 
@@ -1071,7 +1077,8 @@ fi
 #
 GWD_HRRRsuite_DIR=""
 if [ "${CCPP_PHYS_SUITE}" = "FV3_HRRR" ] || \
-   [ "${CCPP_PHYS_SUITE}" = "FV3_RAP" ]; then
+   [ "${CCPP_PHYS_SUITE}" = "FV3_RAP" ] || \
+   [ "${CCPP_PHYS_SUITE}" = "FV3_GFS_v15_thompson_mynn_lam3km" ]; then
 #
 # If in NCO mode, make sure that GWD_HRRRsuite_BASEDIR is set equal to  
 # FIXLAM_NCO_BASEDIR

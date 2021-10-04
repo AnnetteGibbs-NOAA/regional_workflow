@@ -1518,11 +1518,24 @@ NNODES_RUN_REF2TTEN="1"
 NNODES_RUN_NONVARCLDANL="1"
 NNODES_RUN_GRAPHICS="1"
 #
-# Number of cores.
+# Number of cores and other job cards needed for running on WCOSS-Dell
 #
-NCORES_RUN_ANAL="4"
-NATIVE_RUN_FCST="--cpus-per-task 2 --exclusive"
-NATIVE_RUN_ANAL="--cpus-per-task 2 --exclusive"
+NCORES_RUN_ANAL=""
+NATIVE_RUN_ANAL=""
+NCTSK_RUN_ANAL=""
+OMP_THREADS_RUN_ANAL=""
+TOTAL_TASKS_RUN_ANAL=""
+#
+TOTAL_TASKS_RUN_FCST=""
+NCTSK_RUN_FCST=""
+OMP_THREADS_RUN_FCST=""
+NATIVE_RUN_FCST=""
+#
+OMP_THREADS_RUN_POST=""
+TOTAL_TASKS_RUN_POST=""
+NCTSK_RUN_POST=""
+NATIVE_RUN_POST=""
+
 #
 # Number of MPI processes per node.
 #
