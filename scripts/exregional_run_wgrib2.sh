@@ -7,6 +7,7 @@
 #
 #-----------------------------------------------------------------------
 #
+date
 . ${GLOBAL_VAR_DEFNS_FP}
 . $USHDIR/source_util_funcs.sh
 #
@@ -109,6 +110,14 @@ case $MACHINE in
 
     APRUN="mpirun"
     ;;
+
+"WCOSS2")
+  ulimit -s unlimited
+  ulimit -a
+  export OMP_NUM_THREADS=1
+  APRUN="mpiexec -n 1 -ppn 1"
+  module load wgrib2/2.0.8_wmo
+  ;;
 
   "HERA")
     APRUN="srun"
@@ -251,9 +260,9 @@ ln_vrfy -sf --relative ${comout}/${NET}.t${cyc}z.bgrd3df${fhr}.${tmmark}.grib2 $
 ln_vrfy -sf --relative ${comout}/${NET}.t${cyc}z.bgsfcf${fhr}.${tmmark}.grib2  ${comout}/BGSFC_${basetime}${post_fhr}
 
 net4=$(echo ${NET:0:4} | tr '[:upper:]' '[:lower:]')
-ln_vrfy -sf --relative ${comout}/${NET}.t${cyc}z.bgdawpf${fhr}.${tmmark}.grib2 ${comout}/${net4}.t${cyc}z.prslev.f${fhr}.conus_3km.grib2
-ln_vrfy -sf --relative ${comout}/${NET}.t${cyc}z.bgrd3df${fhr}.${tmmark}.grib2 ${comout}/${net4}.t${cyc}z.natlev.f${fhr}.conus_3km.grib2
-ln_vrfy -sf --relative ${comout}/${NET}.t${cyc}z.bgsfcf${fhr}.${tmmark}.grib2  ${comout}/${net4}.t${cyc}z.testbed.f${fhr}.conus_3km.grib2
+ln_vrfy -sf --relative ${comout}/${NET}.t${cyc}z.bgdawpf${fhr}.${tmmark}.grib2 ${comout}/${net4}.t${cyc}z.prslev.f${fhr}.namerica_3km.grib2
+ln_vrfy -sf --relative ${comout}/${NET}.t${cyc}z.bgrd3df${fhr}.${tmmark}.grib2 ${comout}/${net4}.t${cyc}z.natlev.f${fhr}.namerica_3km.grib2
+ln_vrfy -sf --relative ${comout}/${NET}.t${cyc}z.bgsfcf${fhr}.${tmmark}.grib2  ${comout}/${net4}.t${cyc}z.testbed.f${fhr}.namerica_3km.grib2
 # Remap to additional output grids if requested
 if [ ${#ADDNL_OUTPUT_GRIDS[@]} -gt 0 ]; then
 
@@ -269,6 +278,20 @@ if [ ${#ADDNL_OUTPUT_GRIDS[@]} -gt 0 ]; then
   grid_specs_hrrre="lambert:-97.5:38.5 -122.719528:1800:3000.0 21.138123:1060:3000.0"
   grid_specs_rrfsak="lambert:-161.5:63.0 172.102615:1379:3000.0 45.84576:1003:3000.0"
   grid_specs_hrrrak="nps:225:60.000000 185.117126:1299:3000.0 41.612949:919:3000.0"
+  grid_specs_namerica="nps:245:60 206.5:5200:3170 -4.0:3268:3170"
+# Ben's grid specs
+# grid_specs_ak="nps:210.0:60.0 181.429:1649:2976.0 40.530:1105:2976.0"
+# grid_specs_hi="mercator:20.00 198.474999:321:2500.0:206.13099 18.072699:225:2500.0:23.087799"
+# grid_specs_pr="mercator:20.00 284.813532:491:2500.0:296.515500 14.823817:306:2500.0:21.736200"
+# grid_specs_conus="lambert:262.5:38.5:38.5 237.280472:1799:3000 21.138123:1059:3000"
+# RTMA/URMA's grid specs
+  grid_specs_ak="nps:210:60 181.429:1649:2976.563 40.530101:1105:2976.563"
+  grid_specs_hi="mercator:20 198.474999:321:2500:206.130999 18.072699:225:2500:23.087799"
+  grid_specs_pr="mercator:20.000000 291.804700:353:1250.000000:296.015500 16.828700:257:1250.000000:19.736200"
+# Hires CONUS grid
+  grid_specs_conus="lambert:265:25:25 238.446:2145:2539.703 20.192:1377:2539.703"
+# Hireswexp CONUS grid
+# grid_specs_conus="lambert:265:25:25 233.723448:2345:2539.703 19.228976:1597:2539.703"
 
   for grid in ${ADDNL_OUTPUT_GRIDS[@]}
   do
@@ -309,15 +332,15 @@ if [ ${#ADDNL_OUTPUT_GRIDS[@]} -gt 0 ]; then
       cp_vrfy ${bg_remap} ${comout}/${grid}_grid/${NET}.t${cyc}z.bg${leveltype}f${fhr}.${tmmark}.grib2
 
       if [ $leveltype = 'dawp' ]; then
-         ln_vrfy -fs --relative ${comout}/${grid}_grid/${NET}.t${cyc}z.bg${leveltype}f${fhr}.${tmmark}.grib2 ${comout}/${net4}.t${cyc}z.prslev.f${fhr}.conus_3km.grib2
+         ln_vrfy -fs --relative ${comout}/${grid}_grid/${NET}.t${cyc}z.bg${leveltype}f${fhr}.${tmmark}.grib2 ${comout}/${net4}.t${cyc}z.prslev.f${fhr}.namerica_3km.grib2
       fi
 
       if [ $leveltype = 'rd3d' ]; then
-         ln_vrfy -fs --relative ${comout}/${grid}_grid/${NET}.t${cyc}z.bg${leveltype}f${fhr}.${tmmark}.grib2 ${comout}/${net4}.t${cyc}z.natlev.f${fhr}.conus_3km.grib2
+         ln_vrfy -fs --relative ${comout}/${grid}_grid/${NET}.t${cyc}z.bg${leveltype}f${fhr}.${tmmark}.grib2 ${comout}/${net4}.t${cyc}z.natlev.f${fhr}.namerica_3km.grib2
       fi
 
       if [ $leveltype = 'sfc' ]; then
-         ln_vrfy -fs --relative ${comout}/${grid}_grid/${NET}.t${cyc}z.bg${leveltype}f${fhr}.${tmmark}.grib2 ${comout}/${net4}.t${cyc}z.testbed.f${fhr}.conus_3km.grib2
+         ln_vrfy -fs --relative ${comout}/${grid}_grid/${NET}.t${cyc}z.bg${leveltype}f${fhr}.${tmmark}.grib2 ${comout}/${net4}.t${cyc}z.testbed.f${fhr}.namerica_3km.grib2
       fi
 
       # Link output for transfer from Jet to web
@@ -334,6 +357,7 @@ rm_vrfy -rf ${fhr_dir}
 #
 #-----------------------------------------------------------------------
 #
+date
 print_info_msg "
 ========================================================================
 Post-processing for forecast hour $fhr completed successfully.

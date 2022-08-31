@@ -7,6 +7,7 @@
 #
 #-----------------------------------------------------------------------
 #
+date
 . ${GLOBAL_VAR_DEFNS_FP}
 . $USHDIR/source_util_funcs.sh
 #
@@ -85,6 +86,10 @@ case $MACHINE in
 
   "WCOSS_DELL_P3")
     APRUN="mpirun"
+    ;;
+
+  "WCOSS2")
+    APRUN="mpiexec -n 1 -ppn 1"
     ;;
 
   "HERA")
@@ -848,6 +853,7 @@ fi
 #
 #-----------------------------------------------------------------------
 #
+date
 print_info_msg "
 ========================================================================
 Prepare start completed successfully!!!

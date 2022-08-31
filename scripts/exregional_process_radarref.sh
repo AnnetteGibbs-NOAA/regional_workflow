@@ -7,6 +7,7 @@
 #
 #-----------------------------------------------------------------------
 #
+date
 . ${GLOBAL_VAR_DEFNS_FP}
 . $USHDIR/source_util_funcs.sh
 #
@@ -93,6 +94,12 @@ case $MACHINE in
   ulimit -s unlimited
   ulimit -a
   APRUN="mpirun -l -np 36"
+  ;;
+#
+"WCOSS2")
+  ulimit -s unlimited
+  ulimit -a
+  APRUN="mpiexec -n 36 -ppn 64"
   ;;
 #
 "HERA")
@@ -224,7 +231,7 @@ for bigmin in ${RADARREFL_TIMELEVEL[@]}; do
 
 case $MACHINE in
 
-"WCOSS_C" | "WCOSS" | "WCOSS_DELL_P3")
+"WCOSS_C" | "WCOSS" | "WCOSS_DELL_P3" | "WCOSS2" )
 
   obs_appendix=grib2.gz
   ;;
@@ -400,6 +407,7 @@ done # done with the bigmin for-loop
 #
 #-----------------------------------------------------------------------
 #
+date
 print_info_msg "
 ========================================================================
 RADAR REFL PROCESS completed successfully!!!

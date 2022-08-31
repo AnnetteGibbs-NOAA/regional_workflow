@@ -7,6 +7,7 @@
 #
 #-----------------------------------------------------------------------
 #
+date
 . ${GLOBAL_VAR_DEFNS_FP}
 . $USHDIR/source_util_funcs.sh
 #
@@ -93,6 +94,14 @@ case $MACHINE in
   ulimit -s unlimited
   ulimit -a
   APRUN="mpirun -l -np ${IO_LAYOUT_Y}"
+  ;;
+#
+"WCOSS2")
+  ulimit -s unlimited
+  ulimit -a
+# APRUN="mpiexec -n ${IO_LAYOUT_Y} -ppn 4"
+# APRUN="mpiexec -n 168 -ppn 84"
+  APRUN="mpiexec -n ${IO_LAYOUT_Y} -ppn 16"
   ;;
 #
 "HERA")
@@ -368,6 +377,7 @@ touch nonvarcldanl_complete.txt
 #
 #-----------------------------------------------------------------------
 #
+date
 print_info_msg "
 ========================================================================
 RADAR REFL TTEN PROCESS completed successfully!!!

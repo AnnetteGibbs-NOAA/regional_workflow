@@ -111,6 +111,10 @@ case "$MACHINE" in
     . /usrx/local/prod/lmod/lmod/init/sh
     ;;
 #
+  "WCOSS2")
+    . /usr/share/lmod/lmod/init/sh
+    ;;
+#
   "HERA")
     . /apps/lmod/lmod/init/sh
     ;;

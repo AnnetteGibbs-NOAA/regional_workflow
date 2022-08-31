@@ -6,6 +6,7 @@
 #
 #-----------------------------------------------------------------------
 #
+date
 . ${GLOBAL_VAR_DEFNS_FP}
 . $USHDIR/source_util_funcs.sh
 . $USHDIR/set_FV3nml_ens_stoch_seeds.sh
@@ -109,6 +110,19 @@ case $MACHINE in
     APRUN="mpirun -l -np ${PE_MEMBER01}"
     OMP_STACKSIZE=2048m
     ;;
+
+  "WCOSS2")
+    ulimit -s unlimited
+    ulimit -a
+    export OMP_NUM_THREADS=2
+    nodes=21
+    ncnode=112
+    let nctsk=ncnode/OMP_NUM_THREADS
+    let ntasks=1176
+    echo nctsk = $nctsk and ntasks = $ntasks
+    APRUN="mpiexec -n $ntasks -ppn $nctsk --cpu-bind core --depth 2"
+#   APRUN="mpiexec -n 1024 -ppn 64 --cpu-bind core --depth 2"
+  ;;
 
   "HERA")
     ulimit -s unlimited
@@ -519,37 +533,95 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-create_model_configure_file \
-  cdate="$cdate" \
-  cycle_type="$cycle_type" \
-  nthreads=${OMP_NUM_THREADS:-1} \
-  run_dir="${run_dir}" || print_err_msg_exit "\
-Call to function to create a model configuration file for the current
-cycle's (cdate) run directory (run_dir) failed:
-  cdate = \"${cdate}\"
-  run_dir = \"${run_dir}\""
+yr=`echo $cdate | cut -c1-4`
+mn=`echo $cdate | cut -c5-6`
+dy=`echo $cdate | cut -c7-8`
+hr=`echo $cdate | cut -c9-10`
+
+#create_model_configure_file \
+#  cdate="$cdate" \
+#  cycle_type="$cycle_type" \
+#  nthreads=${OMP_NUM_THREADS:-1} \
+#  run_dir="${run_dir}" || print_err_msg_exit "\
+#Call to function to create a model configuration file for the current
+#cycle's (cdate) run directory (run_dir) failed:
+#  cdate = \"${cdate}\"
+#  run_dir = \"${run_dir}\""
+
+cp ${EXPTDIR}/model_configure.tmp .
+
+#
+# decide the forecast length for this cycle
+#
+
+  num_fhrs=( "${#FCST_LEN_HRS_CYCLES[@]}" )
+  ihh=`expr ${hr} + 0`
+  if [ ${num_fhrs} -gt ${ihh} ]; then
+     FCST_LEN_HRS_thiscycle=${FCST_LEN_HRS_CYCLES[${ihh}]}
+  else
+     FCST_LEN_HRS_thiscycle=${FCST_LEN_HRS}
+  fi
+  if [ ${cycle_type} == "spinup" ]; then
+    FCST_LEN_HRS_thiscycle=${FCST_LEN_HRS_SPINUP}
+  fi
+
+
+
+cat model_configure.tmp | sed s/YR/$yr/ | \
+    sed s/MN/$mn/ | sed s/DY/$dy/ | sed s/H_R/$hr/ | \
+    sed s/NH_FCST/$FCST_LEN_HRS_thiscycle/ > model_configure
 
 #
 #-----------------------------------------------------------------------
 #
-# Call the function that creates the model configuration file within each
+#the function that creates the model configuration file within each
 # cycle directory.
 #
 #-----------------------------------------------------------------------
 #
-create_diag_table_file \
-  run_dir="${run_dir}" || print_err_msg_exit "\
-  Call to function to create a diag table file for the current.
-cycle's (cdate) run directory (run_dir) failed:
-  run_dir = \"${run_dir}\""
+#create_diag_table_file \
+#  run_dir="${run_dir}" || print_err_msg_exit "\
+#  Call to function to create a diag table file for the current.
+#cycle's (cdate) run directory (run_dir) failed:
+#  run_dir = \"${run_dir}\""
+
+cat > temp << !
+${yr}${mn}${dy}.${hr}Z.C3359.32bit.non-hydro
+$yr $mn $dy $hr 0 0
+!
+
+cat temp ${TEMPLATE_DIR}/diag_table.FV3_GFS_v15_thompson_mynn_lam3km.tmp > diag_table
+
 
 #
 #-----------------------------------------------------------------------
 #
-export KMP_AFFINITY=${KMP_AFFINITY:-scatter}
-export KMP_AFFINITY=scatter
-export OMP_NUM_THREADS=${OMP_NUM_THREADS:-1} #Needs to be 1 for dynamic build of CCPP with GFDL fast physics, was 2 before.
-export OMP_STACKSIZE=${OMP_STACKSIZE:-1024m}
+#export KMP_AFFINITY=${KMP_AFFINITY:-scatter}
+#export KMP_AFFINITY=scatter
+#export OMP_NUM_THREADS=${OMP_NUM_THREADS:-1} #Needs to be 1 for dynamic build of CCPP with GFDL fast physics, was 2 before.
+#export OMP_STACKSIZE=${OMP_STACKSIZE:-1024m}
+
+# Got these from the FV3GFS env. (from Ben's job script)
+export MPI_LABELIO=YES
+export MP_STDOUTMODE="ORDERED"
+
+ulimit -s unlimited
+ulimit -a
+export OMP_PROC_BIND=true
+export OMP_NUM_THREADS=2
+export OMP_STACKSIZE=1G
+export OMP_PLACES=cores
+export MPICH_ABORT_ON_ERROR=1
+export MALLOC_MMAP_MAX_=0
+export MALLOC_TRIM_THRESHOLD_=134217728
+export FORT_FMT_NO_WRAP_MARGIN=true
+export MPICH_REDUCE_NO_SMP=1
+export FOR_DISABLE_KMP_MALLOC=TRUE
+export FI_OFI_RXM_RX_SIZE=40000
+export FI_OFI_RXM_TX_SIZE=40000
+export MPICH_OFI_STARTUP_CONNECT=1
+export MPICH_OFI_VERBOSE=1
+export MPICH_OFI_NIC_VERBOSE=1
 
 #
 #-----------------------------------------------------------------------
@@ -633,6 +705,7 @@ if [ ${BKTYPE} -eq 1 ] && [ ${n_iolayouty} -ge 1 ]; then
     fi
   done
 fi
+date
 #
 #-----------------------------------------------------------------------
 #

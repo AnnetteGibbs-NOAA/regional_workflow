@@ -11,6 +11,9 @@ elif [[ -d /cm ]] ; then
 elif [[ -d /ioddev_dell ]]; then
     PLATFORM=wcoss_dell_p3
     FIX_RRFS_LOCATION="/gpfs/dell6/emc/modeling/noscrub/emc.campara/FIX_RRFS"
+elif [[ -d /lfs ]]; then
+    PLATFORM=wcoss2
+    FIX_RRFS_LOCATION="/lfs/h2/emc/da/noscrub/Shun.Liu/FIX_RRFS"
 elif [[ -d /scratch1 ]] ; then
     PLATFORM=hera
     FIX_RRFS_LOCATION="/scratch2/BMC/rtrr/FIX_RRFS"

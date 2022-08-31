@@ -631,6 +631,9 @@ bination of external model (extrn_mdl_name) and analysis or forecast
     "WCOSS_DELL_P3")
       sysdir=""
       ;;
+    "WCOSS2")
+      sysdir=""
+      ;;
     "HERA")
       sysdir=""
       ;;
@@ -666,6 +669,9 @@ has not been specified for this external model and machine combination:
       sysdir="$sysbasedir/gfs.${yyyymmdd}/${hh}/atmos"
       ;;
     "WCOSS_DELL_P3")
+      sysdir="$sysbasedir/gfs.${yyyymmdd}/${hh}/atmos"
+      ;;
+    "WCOSS2")
       sysdir="$sysbasedir/gfs.${yyyymmdd}/${hh}/atmos"
       ;;
     "HERA")
@@ -760,6 +766,9 @@ has not been specified for this external model and machine combination:
     "WCOSS_DELL_P3")
       sysdir="$sysbasedir"
       ;;
+    "WCOSS2")
+      sysdir="$sysbasedir"
+      ;;
     "HERA")
       sysdir="$sysbasedir"
       ;;
@@ -794,6 +803,9 @@ has not been specified for this external model and machine combination:
     "WCOSS_DELL_P3")
       sysdir="$sysbasedir"
       ;;
+    "WCOSS2")
+      sysdir="$sysbasedir"
+      ;;
     "HERA")
       sysdir="$sysbasedir"
       ;;
@@ -825,6 +837,9 @@ has not been specified for this external model and machine combination:
       sysdir="$sysbasedir"
       ;;
     "WCOSS_DELL_P3")
+      sysdir="$sysbasedir"
+      ;;
+    "WCOSS2")
       sysdir="$sysbasedir"
       ;;
     "HERA")

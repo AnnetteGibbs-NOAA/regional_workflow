@@ -7,6 +7,7 @@
 #
 #-----------------------------------------------------------------------
 #
+date
 . ${GLOBAL_VAR_DEFNS_FP}
 . $USHDIR/source_util_funcs.sh
 #
@@ -94,6 +95,12 @@ case $MACHINE in
   ulimit -s unlimited
   ulimit -a
   APRUN="mpirun -l -np 1"
+  ;;
+#
+"WCOSS2")
+  ulimit -s unlimited
+  ulimit -a
+  APRUN="mpiexec -n 1 -ppn 1"
   ;;
 #
 "HERA")
@@ -198,7 +205,7 @@ else
 
   case $MACHINE in
 
-  "WCOSS_C" | "WCOSS" | "WCOSS_DELL_P3")
+  "WCOSS_C" | "WCOSS" | "WCOSS_DELL_P3" | "WCOSS2")
 
     obsfileprefix=${obs_source}
     obspath_tmp=${OBSPATH}/${obs_source}.${YYYYMMDD}
@@ -449,6 +456,7 @@ fi
 #
 #-----------------------------------------------------------------------
 #
+date
 print_info_msg "
 ========================================================================
 BUFR PROCESS completed successfully!!!

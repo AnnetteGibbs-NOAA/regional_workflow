@@ -7,6 +7,7 @@
 #
 #-----------------------------------------------------------------------
 #
+date
 . ${GLOBAL_VAR_DEFNS_FP}
 . $USHDIR/source_util_funcs.sh
 #
@@ -94,6 +95,18 @@ case $MACHINE in
   ulimit -s unlimited
   ulimit -a
   APRUN="mpirun -l"
+  ;;
+#
+"WCOSS2")
+#
+  module list
+  ulimit -s unlimited
+  ulimit -a
+# APRUN="mpiexec -n 320 -ppn 32 --cpu-bind core --depth 1"
+  APRUN="mpiexec -n 352 -ppn 16 --cpu-bind core --depth 8"
+  export FI_OFI_RXM_SAR_LIMIT=3145728
+  export OMP_STACKSIZE=500M
+  export OMP_NUM_THREADS=1
   ;;
 #
 "THEIA")
@@ -254,7 +267,7 @@ if  [[ ${regional_ensemble_option:-1} -eq 1 ]]; then #using GDAS
 
   case $MACHINE in
 
-  "WCOSS_C" | "WCOSS" | "WCOSS_DELL_P3")
+  "WCOSS_C" | "WCOSS" | "WCOSS_DELL_P3" | "WCOSS2")
 
     for loop in $loops; do
       for timelist in $(ls ${ENKF_FCST}/enkfgdas.*/*/atmos/mem080/gdas*.atmf${loop}.${ftype}); do
@@ -438,7 +451,7 @@ else
 
   case $MACHINE in
 
-  "WCOSS_C" | "WCOSS" | "WCOSS_DELL_P3")
+  "WCOSS_C" | "WCOSS" | "WCOSS_DELL_P3" | "WCOSS2")
      obsfileprefix=${obs_source}
      obspath_tmp=${OBSPATH}/${obs_source}.${YYYYMMDD}
     ;;
@@ -1091,6 +1104,7 @@ fi
 #
 #-----------------------------------------------------------------------
 #
+date
 print_info_msg "
 ========================================================================
 ANALYSIS GSI completed successfully!!!

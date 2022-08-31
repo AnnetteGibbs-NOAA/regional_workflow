@@ -7,6 +7,7 @@
 #
 #-----------------------------------------------------------------------
 #
+date
 . ${GLOBAL_VAR_DEFNS_FP}
 . $USHDIR/source_util_funcs.sh
 #
@@ -109,6 +110,18 @@ case $MACHINE in
     export OMP_NUM_THREADS=$threads
 
     APRUN="mpirun"
+    ;;
+
+  "WCOSS2")
+    ulimit -s unlimited
+    ulimit -a
+    export OMP_NUM_THREADS=1
+    export MP_IOAGENT_CNT=all
+    export MP_IO_BUFFER_SIZE=8M
+    export MP_BINDPROC=NO
+    export MP_SHARED_MEMORY=yes
+    APRUN="mpiexec -n 280 -ppn 28"
+    module load wgrib2/2.0.8
     ;;
 
   "HERA")
@@ -353,6 +366,7 @@ wgrib2 NATLEV.GrbF${post_fhr} -set center 7 -grib ${bgrd3d}
 #
 #-----------------------------------------------------------------------
 #
+date
 print_info_msg "
 ========================================================================
 Post-processing for forecast hour $fhr completed successfully.

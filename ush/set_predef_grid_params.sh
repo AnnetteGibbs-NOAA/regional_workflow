@@ -1211,11 +1211,9 @@ case ${PREDEF_GRID_NAME} in
   ESGgrid_NX=3950
   ESGgrid_NY=2700
  
-  ESGgrid_PAZI="0.0"
-
   ESGgrid_WIDE_HALO_WIDTH="6"
 
-  DT_ATMOS="${DT_ATMOS:-60}"
+  DT_ATMOS="${DT_ATMOS:-36}"
 
   LAYOUT_X="${LAYOUT_X:-40}"
   LAYOUT_Y="${LAYOUT_Y:-45}"
@@ -1223,7 +1221,7 @@ case ${PREDEF_GRID_NAME} in
 
   if [ "$QUILTING" = "TRUE" ]; then
     WRTCMP_write_groups="${WRTCMP_write_groups:-1}"
-    WRTCMP_write_tasks_per_group="${WRTCMP_write_tasks_per_group:-50}"
+    WRTCMP_write_tasks_per_group="${WRTCMP_write_tasks_per_group:-144}"
     WRTCMP_output_grid="rotated_latlon"
     WRTCMP_cen_lon="-113.0"
     WRTCMP_cen_lat="55.0"
