@@ -79,6 +79,7 @@ case $MACHINE in
   "WCOSS2")
     ncores=$(( NNODES_RUN_PREPSTART*PPN_RUN_PREPSTART))
     APRUN="mpiexec -n ${ncores} -ppn ${PPN_RUN_PREPSTART}"
+    lfs setstripe --stripe-count -1 --stripe-size 2097152 --stripe-index -1 --pool disk ${modelinputdir}
     ;;
 
   "HERA")

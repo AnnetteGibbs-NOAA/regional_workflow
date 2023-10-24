@@ -205,7 +205,9 @@ relative_or_null=""
 target="${FIXLAM}/${CRES}${DOT_OR_USCORE}mosaic.halo${NH3}.nc" # must use *mosaic.halo3.nc
 symlink="grid_spec.nc"
 if [ -f "${target}" ]; then
-  ln_vrfy -sf ${relative_or_null} $target $symlink
+  #ln_vrfy -sf ${relative_or_null} $target $symlink
+  echo "$target -> $symlink"
+  cp_vrfy --no-clobber $target $symlink
 else
   print_err_msg_exit "\
 Cannot create symlink because target does not exist:
@@ -229,7 +231,9 @@ grid_fn=$( get_charvar_from_netcdf "${mosaic_fn}" "gridfiles" )
 target="${FIXLAM}/${grid_fn}"
 symlink="${grid_fn}"
 if [ -f "${target}" ]; then
-  ln_vrfy -sf ${relative_or_null} $target $symlink
+  #ln_vrfy -sf ${relative_or_null} $target $symlink
+  echo "$target -> $symlink"
+  cp_vrfy --no-clobber $target $symlink
 else
   print_err_msg_exit "\
 Cannot create symlink because target does not exist:
@@ -251,7 +255,9 @@ fi
 target="${FIXLAM}/${CRES}${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NH4}.nc"
 symlink="grid.tile${TILE_RGNL}.halo${NH4}.nc"
 if [ -f "${target}" ]; then
-  ln_vrfy -sf ${relative_or_null} $target $symlink
+  #ln_vrfy -sf ${relative_or_null} $target $symlink
+  echo "$target -> $symlink"
+  cp_vrfy --no-clobber $target $symlink
 else
   print_err_msg_exit "\
 Cannot create symlink because target does not exist:
@@ -266,7 +272,9 @@ relative_or_null=""
 target="${FIXLAM}/${CRES}${DOT_OR_USCORE}oro_data.tile${TILE_RGNL}.halo${NH0}.nc"
 symlink="oro_data.nc"
 if [ -f "${target}" ]; then
-  ln_vrfy -sf ${relative_or_null} $target $symlink
+  #ln_vrfy -sf ${relative_or_null} $target $symlink
+  echo "$target -> $symlink"
+  cp_vrfy --no-clobber $target $symlink
 else
   print_err_msg_exit "\
 Cannot create symlink because target does not exist:
@@ -289,7 +297,9 @@ fi
 target="${FIXLAM}/${CRES}${DOT_OR_USCORE}oro_data.tile${TILE_RGNL}.halo${NH4}.nc"
 symlink="oro_data.tile${TILE_RGNL}.halo${NH4}.nc"
 if [ -f "${target}" ]; then
-  ln_vrfy -sf ${relative_or_null} $target $symlink
+  #ln_vrfy -sf ${relative_or_null} $target $symlink
+  echo "$target -> $symlink"
+  cp_vrfy --no-clobber $target $symlink
 else
   print_err_msg_exit "\
 Cannot create symlink because target does not exist:
@@ -315,7 +325,9 @@ if [ "${CCPP_PHYS_SUITE}" = "FV3_HRRR" ] || \
     target="${FIXLAM}/${CRES}${DOT_OR_USCORE}oro_data_${fileid}.tile${TILE_RGNL}.halo${NH0}.nc"
     symlink="oro_data_${fileid}.nc"
     if [ -f "${target}" ]; then
-      ln_vrfy -sf ${relative_or_null} $target $symlink
+      #ln_vrfy -sf ${relative_or_null} $target $symlink
+      echo "$target -> $symlink"
+      cp_vrfy --no-clobber $target $symlink
     else
       print_err_msg_exit "\
 Cannot create symlink because target does not exist:
@@ -386,7 +398,9 @@ if [ -f "${target}.0000" ]; then
   done
 else
   if [ -f "${target}" ]; then
-    ln_vrfy -sf ${relative_or_null} $target $symlink
+    #ln_vrfy -sf ${relative_or_null} $target $symlink
+    echo "$target -> $symlink"
+    cp_vrfy --no-clobber $target $symlink
   else
     print_err_msg_exit "\
     Cannot create symlink because target does not exist:
@@ -398,7 +412,9 @@ if [ ${BKTYPE} -eq 1 ]; then
   target="sfc_data.tile${TILE_RGNL}.halo${NH0}.nc"
   symlink="sfc_data.nc"
   if [ -f "${target}" ]; then
-    ln_vrfy -sf ${relative_or_null} $target $symlink
+    #ln_vrfy -sf ${relative_or_null} $target $symlink
+    echo "$target -> $symlink"
+    cp_vrfy --no-clobber $target $symlink
   else
     print_err_msg_exit "\
     Cannot create symlink because target does not exist:
@@ -551,6 +567,7 @@ if [ "${STOCH}" == "TRUE" ]; then
    cdate = \"${cdate}\"
    run_dir = \"${run_dir}\""
 fi
+
 #
 #-----------------------------------------------------------------------
 #
